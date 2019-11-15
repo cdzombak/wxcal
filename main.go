@@ -132,6 +132,8 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, icalOu
 		}
 	}
 
+	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon)
+
 	calID := buildCalendarID(calLocation, calDomain, lat, lon)
 	cal := ics.NewCalendar()
 	cal.SetName(fmt.Sprintf("%s Weather", calLocation))
@@ -152,9 +154,9 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, icalOu
 		event.SetAllDayStartAt(d.Start)
 		event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
 		event.SetLocation(calLocation)
-		event.SetURL(fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon))
+		event.SetURL(forecastLink)
 		event.SetSummary(d.SummaryLine())
-		event.SetDescription(d.DetailedForecast())
+		event.SetDescription(fmt.Sprintf("%s\\n\\nForecast Detail: %s", d.DetailedForecast(), forecastLink))
 	}
 
 	err = ioutil.WriteFile(icalOutfile, []byte(cal.Serialize()), 0644)
