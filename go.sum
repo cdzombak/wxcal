@@ -1,2 +1,4 @@
 github.com/arran4/golang-ical v0.0.0-20191011054615-fb8af82a1cf8 h1:AiOHKBBERp8Ifcq0PJnCkGn5uyQiO/pXkpaBF5JGlr8=
 github.com/arran4/golang-ical v0.0.0-20191011054615-fb8af82a1cf8/go.mod h1:iDFK01A1Yb5HiGn6YEaZ516fCow5FnEAjyMfOOIYMuo=
+github.com/cdzombak/golang-ical v0.0.0-20191115194650-615e903d90b7 h1:ZThB8tllmdHmXqmqoPiwEYxASQB1T3IhVxpskUMVh4I=
+github.com/cdzombak/golang-ical v0.0.0-20191115194650-615e903d90b7/go.mod h1:iDFK01A1Yb5HiGn6YEaZ516fCow5FnEAjyMfOOIYMuo=
