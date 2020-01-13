@@ -32,6 +32,7 @@ func (p CalendarForecastPeriod) SummaryLine() string {
 	}
 	sf := strings.Replace(p.ShortForecast, "Slight ", "", -1)
 	sf = strings.Replace(sf, " then ", "; ", -1)
+	sf = strings.Replace(sf, "Areas Of ", "", -1)
 	return fmt.Sprintf("%dº%s %s", p.Temperature, p.TemperatureUnit, sf)
 }
 
