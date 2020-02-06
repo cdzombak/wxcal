@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/arran4/golang-ical"
+	"github.com/avast/retry-go"
 )
 
 // ProductID identifies this software in User-Agents and iCal fields.
@@ -109,7 +110,15 @@ func mustInt(x json.Number) int {
 
 // Main implements the wxcal program.
 func Main(calLocation string, calDomain string, lat float64, lon float64, icalOutfile string) error {
-	forecastResp, err := GetForecast(lat, lon)
+	var forecastResp *ForecastResponse
+	err := retry.Do(
+		func() (err error) {
+			forecastResp, err = GetForecast(lat, lon)
+			return
+		},
+		retry.Attempts(3),
+		retry.Delay(20*time.Second),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get forecast: %w", err)
 	}
