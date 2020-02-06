@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -98,6 +99,14 @@ func buildCalendarID(calLocation string, calDomain string, lat float64, lon floa
 		strings.ToLower(calDomain))
 }
 
+func mustInt(x json.Number) int {
+	xi64, err := x.Int64()
+	if err != nil {
+		panic(err)
+	}
+	return int(xi64)
+}
+
 // Main implements the wxcal program.
 func Main(calLocation string, calDomain string, lat float64, lon float64, icalOutfile string) error {
 	forecastResp, err := GetForecast(lat, lon)
@@ -119,7 +128,7 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, icalOu
 			Name:             forecastPeriod.Name,
 			ShortForecast:    forecastPeriod.ShortForecast,
 			DetailedForecast: forecastPeriod.DetailedForecast,
-			Temperature:      forecastPeriod.Temperature,
+			Temperature:      mustInt(forecastPeriod.Temperature),
 			TemperatureUnit:  forecastPeriod.TemperatureUnit,
 		}
 		if forecastPeriod.Daytime {

@@ -20,17 +20,17 @@ type PointsResponse struct {
 
 // ForecastPeriod represents a forecast for a specific time period from the weather.gov forecast API
 type ForecastPeriod struct {
-	Number           int       `json:"number"`
-	Name             string    `json:"name"`
-	StartTime        time.Time `json:"startTime"`
-	EndTime          time.Time `json:"endTime"`
-	Daytime          bool      `json:"isDaytime"`
-	Temperature      int       `json:"temperature"`
-	TemperatureUnit  string    `json:"temperatureUnit"`
-	WindSpeed        string    `json:"windSpeed"`
-	WindDirection    string    `json:"windDirection"`
-	ShortForecast    string    `json:"shortForecast"`
-	DetailedForecast string    `json:"detailedForecast"`
+	Number           int         `json:"number"`
+	Name             string      `json:"name"`
+	StartTime        time.Time   `json:"startTime"`
+	EndTime          time.Time   `json:"endTime"`
+	Daytime          bool        `json:"isDaytime"`
+	Temperature      json.Number `json:"temperature"`
+	TemperatureUnit  string      `json:"temperatureUnit"`
+	WindSpeed        string      `json:"windSpeed"`
+	WindDirection    string      `json:"windDirection"`
+	ShortForecast    string      `json:"shortForecast"`
+	DetailedForecast string      `json:"detailedForecast"`
 }
 
 // ForecastResponse represents a subset of a response from the /gridpoints/{x},{y}/forecast API
