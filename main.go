@@ -109,7 +109,7 @@ func mustInt(x json.Number) int {
 }
 
 // Main implements the wxcal program.
-func Main(calLocation string, calDomain string, lat float64, lon float64, icalOutfile string) error {
+func Main(calLocation string, calDomain string, lat float64, lon float64, evtTitlePrefix string, icalOutfile string) error {
 	var forecastResp *ForecastResponse
 	err := retry.Do(
 		func() (err error) {
@@ -175,7 +175,11 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, icalOu
 		event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
 		event.SetLocation(calLocation)
 		event.SetURL(forecastLink)
-		event.SetSummary(d.SummaryLine())
+		evtSummary := d.SummaryLine()
+		if len(evtTitlePrefix) > 0 {
+			evtSummary = fmt.Sprintf("%s %s", evtTitlePrefix, evtSummary)
+		}
+		event.SetSummary(evtSummary)
 		event.SetDescription(fmt.Sprintf("%s\\n\\nForecast Detail: %s", d.DetailedForecast(), forecastLink))
 	}
 
@@ -190,6 +194,7 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, icalOu
 func main() {
 	var calLocation = flag.String("calLocation", "", "The name of the calendar's location (eg. \"Ann Arbor, MI\") (required)")
 	var calendarDomain = flag.String("calDomain", "", "The calendar's domain (eg. \"ical.dzombak.com\") (required)")
+	var evtTitlePrefix = flag.String("evtTitlePrefix", "", "An optional prefix to be inserted before each event's title")
 	var lat = flag.Float64("lat", 42.27, "The forecast location's latitude (eg. \"42.27\")")
 	var lon = flag.Float64("lon", -83.74, "The forecast location's longitude (eg. \"-83.74\")")
 	var icalOutfile = flag.String("icalFile", "", "Path/filename for iCal output file (required)")
@@ -200,7 +205,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := Main(*calLocation, *calendarDomain, *lat, *lon, *icalOutfile); err != nil {
+	if err := Main(*calLocation, *calendarDomain, *lat, *lon, *evtTitlePrefix, *icalOutfile); err != nil {
 		log.Fatalf(err.Error())
 	}
 }
