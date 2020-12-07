@@ -4,6 +4,18 @@ wxcal generates an iCal feed from weather.gov forecast data for a given location
 
 For an example feed generated with this tool, see [dzombak.com/local/wxcal/Ann-Arbor-MI.ics](https://www.dzombak.com/local/wxcal/Ann-Arbor-MI.ics).
 
+## Installation
+
+Clone the repo (`https://github.com/cdzombak/wxcal.git`) and change into the wxcal source directory.
+
+Run `make install` to install `wxcal` to `/usr/local/bin`.
+
+To install somewhere else, run `make build` and move `./out/wxcal` to wherever you'd like.
+
+### Uninstallation
+
+Just remove the `wxcal` binary wherever it's installed. If you installed to `/usr/local/bin` with `make install`, run `make uninstall` to remove it.
+
 ## Usage
 
 ```
@@ -32,6 +44,11 @@ This invocation, run periodically via cron, generates the example feed mentioned
 ```
 wxcal -calDomain ics.dzombak.com -calLocation "Ann Arbor, MI" -icalFile "/home/cdzombak/wxcal/public/Ann-Arbor-MI.ics" -lat 42.27 -lon -83.74 -evtTitlePrefix "[A2]"
 ```
+
+## About
+
+- Issues: https://github.com/cdzombak/wxcal/issues/new
+- Author: [Chris Dzombak](https://www.dzombak.com)
 
 ## License
 
