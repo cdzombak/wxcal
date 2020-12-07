@@ -33,4 +33,4 @@ wxcal -calDomain ics.dzombak.com -calLocation "Ann Arbor, MI" -icalFile "/home/c
 
 ## License
 
-MIT license; (c) Chris Dzombak 2019-2020. See LICENSE at the root of this repository.
+GNU LGPL v2.1; (c) Chris Dzombak 2019-2020. See LICENSE at the root of this repository.
