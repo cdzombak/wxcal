@@ -14,6 +14,8 @@ import (
 	"github.com/avast/retry-go"
 )
 
+var version = "<dev>"
+
 // ProductID identifies this software in User-Agents and iCal fields.
 const ProductID = "github.com/cdzombak/wxcal"
 
@@ -198,7 +200,13 @@ func main() {
 	var lat = flag.Float64("lat", 42.27, "The forecast location's latitude (eg. \"42.27\")")
 	var lon = flag.Float64("lon", -83.74, "The forecast location's longitude (eg. \"-83.74\")")
 	var icalOutfile = flag.String("icalFile", "", "Path/filename for iCal output file (required)")
+	var printVersion = flag.Bool("version", false, "Print version and exit")
 	flag.Parse()
+
+	if *printVersion {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 
 	if *calLocation == "" || *calendarDomain == "" || *icalOutfile == "" {
 		flag.PrintDefaults()

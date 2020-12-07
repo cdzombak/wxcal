@@ -23,6 +23,8 @@ wxcal [-flag value] [...]
     	The forecast location's longitude (eg. "-83.74") (default -83.74)
 ```
 
+Additionally, `wxcal -version` will print the version number and exit.
+
 ### Example
 
 This invocation, run periodically via cron, generates the example feed mentioned above:
