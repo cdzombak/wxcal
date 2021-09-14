@@ -1,6 +1,6 @@
 # wxcal
 
-wxcal generates an iCal feed from weather.gov forecast data for a given location. The resulting feed has an all-day event for today and for each of the following 6 days; each event contains a summary of the forecast for that day.
+wxcal generates an iCal feed from weather.gov forecast data for a given location. The resulting feed has an all-day event for today and for each of the following 6 days; each event contains a summary of the forecast for that day along with the day's sunrise & sunset times.
 
 For an example feed generated with this tool, see [dzombak.com/local/wxcal/Ann-Arbor-MI.ics](https://www.dzombak.com/local/wxcal/Ann-Arbor-MI.ics).
 
