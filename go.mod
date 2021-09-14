@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/arran4/golang-ical v0.0.0-20191011054615-fb8af82a1cf8
 	github.com/avast/retry-go v2.5.0+incompatible
+	github.com/kelvins/sunrisesunset v0.0.0-20210220141756-39fa1bd816d5
 	github.com/stretchr/testify v1.4.0 // indirect
 )
 

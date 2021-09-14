@@ -4,6 +4,8 @@ github.com/cdzombak/golang-ical v0.0.0-20191115194650-615e903d90b7 h1:ZThB8tllmd
 github.com/cdzombak/golang-ical v0.0.0-20191115194650-615e903d90b7/go.mod h1:iDFK01A1Yb5HiGn6YEaZ516fCow5FnEAjyMfOOIYMuo=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/kelvins/sunrisesunset v0.0.0-20210220141756-39fa1bd816d5 h1:ouekCqYkMw4QXFCaLyYqjBe99/MUW4Qf3DJhCRh1G18=
+github.com/kelvins/sunrisesunset v0.0.0-20210220141756-39fa1bd816d5/go.mod h1:3oZ7G+fb8Z8KF+KPHxeDO3GWpEjgvk/f+d/yaxmDRT4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

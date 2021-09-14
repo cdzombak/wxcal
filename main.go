@@ -12,6 +12,7 @@ import (
 
 	"github.com/arran4/golang-ical"
 	"github.com/avast/retry-go"
+	"github.com/kelvins/sunrisesunset"
 )
 
 var version = "<dev>"
@@ -45,6 +46,8 @@ type CalendarForecastDay struct {
 	Start           time.Time
 	DaytimePeriod   CalendarForecastPeriod
 	NighttimePeriod CalendarForecastPeriod
+	Sunrise time.Time
+	Sunset time.Time
 }
 
 // SummaryLine returns a brief, 1 line summary of the day's forecast.
@@ -147,6 +150,22 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, evtTit
 		} else {
 			calDay.NighttimePeriod = calPeriod
 		}
+		if calDay.Sunrise.IsZero() || calDay.Sunset.IsZero(){
+			_, offsetSec := forecastPeriod.StartTime.Zone()
+			p := sunrisesunset.Parameters{
+				Latitude:  lat,
+				Longitude: lon,
+				UtcOffset: float64(offsetSec)/3600.0,
+				Date:      time.Date(forecastPeriod.StartTime.Year(), forecastPeriod.StartTime.Month(), forecastPeriod.StartTime.Day(), 0, 0, 0, 0, time.UTC),
+			}
+			sunrise, sunset, err := p.GetSunriseSunset()
+			if err == nil {
+				calDay.Sunrise = sunrise
+				calDay.Sunset = sunset
+			} else {
+				log.Printf("error calculating sunrise/sunset: %s", err)
+			}
+		}
 		if existed {
 			cf[i] = calDay
 		} else {
@@ -182,7 +201,12 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, evtTit
 			evtSummary = fmt.Sprintf("%s %s", evtTitlePrefix, evtSummary)
 		}
 		event.SetSummary(evtSummary)
-		event.SetDescription(fmt.Sprintf("%s\\n\\nForecast Detail: %s", d.DetailedForecast(), forecastLink))
+		event.SetDescription(fmt.Sprintf("%s\\n\\nSunrise: %s\\nSunset: %s\\n\\nForecast Detail: %s",
+			d.DetailedForecast(),
+			d.Sunrise.Format("3:04:05 PM"),
+			d.Sunset.Format("3:04:05 PM"),
+			forecastLink,
+		))
 	}
 
 	err = ioutil.WriteFile(icalOutfile, []byte(cal.Serialize()), 0644)
