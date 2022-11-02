@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -209,7 +208,7 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, evtTit
 		))
 	}
 
-	err = ioutil.WriteFile(icalOutfile, []byte(cal.Serialize()), 0644)
+	err = os.WriteFile(icalOutfile, []byte(cal.Serialize()), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write output file '%s': %w", icalOutfile, err)
 	}
