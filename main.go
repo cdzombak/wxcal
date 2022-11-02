@@ -95,9 +95,12 @@ func (cf CalendarForecast) IndexForTime(t time.Time) (int, bool) {
 	return -1, false
 }
 
-func buildCalendarID(calLocation string, calDomain string, lat float64, lon float64) string {
+func buildCalendarID(calLocation string, calDomain string, lat float64, lon float64, isSunCal bool) string {
 	calLocation = strings.Replace(calLocation, " ", "-", -1)
 	calLocation = strings.Replace(calLocation, ",", "", -1)
+	if isSunCal {
+		calLocation += "-Sun"
+	}
 	return fmt.Sprintf("%s{%.2f,%.2f}@%s",
 		strings.ToLower(calLocation),
 		lat, lon,
@@ -113,7 +116,7 @@ func mustInt(x json.Number) int {
 }
 
 // Main implements the wxcal program.
-func Main(calLocation string, calDomain string, lat float64, lon float64, evtTitlePrefix string, icalOutfile string) error {
+func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalOutfile, sunICalOutfile string) error {
 	var forecastResp *ForecastResponse
 	err := retry.Do(
 		func() (err error) {
@@ -174,7 +177,7 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, evtTit
 
 	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon)
 
-	calID := buildCalendarID(calLocation, calDomain, lat, lon)
+	calID := buildCalendarID(calLocation, calDomain, lat, lon, false)
 	cal := ics.NewCalendar()
 	cal.SetName(fmt.Sprintf("%s Weather", calLocation))
 	cal.SetXWRCalName(fmt.Sprintf("%s Weather", calLocation))
@@ -213,6 +216,47 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, evtTit
 		return fmt.Errorf("failed to write output file '%s': %w", icalOutfile, err)
 	}
 
+	if sunICalOutfile != "" {
+		calID := buildCalendarID(calLocation, calDomain, lat, lon, true)
+		cal := ics.NewCalendar()
+		cal.SetName(fmt.Sprintf("%s Sunrise/Sunset", calLocation))
+		cal.SetXWRCalName(fmt.Sprintf("%s Sunrise/Sunset", calLocation))
+		cal.SetDescription(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
+		cal.SetXWRCalDesc(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
+		cal.SetLastModified(time.Now())
+		cal.SetMethod(ics.MethodPublish)
+		cal.SetProductId(fmt.Sprintf("-//%s//EN", ProductID))
+		cal.SetVersion("2.0")
+		cal.SetXPublishedTTL("PT1H")
+		cal.SetRefreshInterval("PT1H")
+
+		for _, d := range cf {
+			event := cal.AddEvent(fmt.Sprintf("%s-%s", d.Start.Format("20060102"), calID))
+			event.SetDtStampTime(time.Now())
+			event.SetModifiedAt(forecastResp.Updated)
+			event.SetAllDayStartAt(d.Start)
+			event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
+			event.SetLocation(calLocation)
+			evtSummary := fmt.Sprintf("☼ ↑ %s; ↓ %s",
+				d.Sunrise.Format("3:04 PM"),
+				d.Sunset.Format("3:04 PM"),
+			)
+			if len(evtTitlePrefix) > 0 {
+				evtSummary = fmt.Sprintf("%s %s", evtTitlePrefix, evtSummary)
+			}
+			event.SetSummary(evtSummary)
+			event.SetDescription(fmt.Sprintf("Sunrise: %s\\nSunset: %s",
+				d.Sunrise.Format("3:04:05 PM"),
+				d.Sunset.Format("3:04:05 PM"),
+			))
+		}
+
+		err = os.WriteFile(sunICalOutfile, []byte(cal.Serialize()), 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write output file '%s': %w", icalOutfile, err)
+		}
+	}
+
 	return nil
 }
 
@@ -223,6 +267,7 @@ func main() {
 	var lat = flag.Float64("lat", 42.27, "The forecast location's latitude (eg. \"42.27\")")
 	var lon = flag.Float64("lon", -83.74, "The forecast location's longitude (eg. \"-83.74\")")
 	var icalOutfile = flag.String("icalFile", "", "Path/filename for iCal output file (required)")
+	var sunICalOutfile = flag.String("sunIcalFile", "", "Optional path/filename for sunrise/sunset iCal output file")
 	var printVersion = flag.Bool("version", false, "Print version and exit")
 	flag.Parse()
 
@@ -236,7 +281,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := Main(*calLocation, *calendarDomain, *lat, *lon, *evtTitlePrefix, *icalOutfile); err != nil {
+	if err := Main(*calLocation, *calendarDomain, *lat, *lon, *evtTitlePrefix, *icalOutfile, *sunICalOutfile); err != nil {
 		log.Fatalf(err.Error())
 	}
 }

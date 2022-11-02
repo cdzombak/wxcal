@@ -4,6 +4,8 @@ wxcal generates an iCal feed from weather.gov forecast data for a given location
 
 For an example feed generated with this tool, see [dzombak.com/local/wxcal/Ann-Arbor-MI.ics](https://www.dzombak.com/local/wxcal/Ann-Arbor-MI.ics).
 
+Optionally, wxcal can also generate a sunrise/sunset specific calendar alongside the forecast calendar.
+
 ## Installation
 
 Clone the repo (`https://github.com/cdzombak/wxcal.git`) and change into the wxcal source directory.
@@ -33,16 +35,24 @@ wxcal [-flag value] [...]
     	The forecast location's latitude (eg. "42.27") (default 42.27)
   -lon float
     	The forecast location's longitude (eg. "-83.74") (default -83.74)
+  -sunIcalFile string
+    	Optional path/filename for sunrise/sunset iCal output file
 ```
 
 Additionally, `wxcal -version` will print the version number and exit.
 
 ### Example
 
-This invocation, run periodically via cron, generates the example feed mentioned above:
+This invocation, run periodically via cron, generates the example feed mentioned above ([dzombak.com/local/wxcal/Ann-Arbor-MI.ics](https://www.dzombak.com/local/wxcal/Ann-Arbor-MI.ics)):
 
 ```
-wxcal -calDomain ics.dzombak.com -calLocation "Ann Arbor, MI" -icalFile "/home/cdzombak/wxcal/public/Ann-Arbor-MI.ics" -lat 42.27 -lon -83.74 -evtTitlePrefix "[A2]"
+wxcal -calDomain ics.dzombak.com -calLocation "Ann Arbor, MI" -lat 42.27 -lon "-83.74" -icalFile "/home/cdzombak/wxcal/public/Ann-Arbor-MI.ics" -evtTitlePrefix "[A2]"
+```
+
+This invocation generates two feeds, [one for Chelsea weather](https://www.dzombak.com/local/wxcal/Chelsea-MI.ics) and [another for Chelsea sunrise/sunset](https://www.dzombak.com/local/wxcal/Chelsea-MI-Sun.ics):
+
+```
+wxcal -calDomain ics.dzombak.com -calLocation "Chelsea, MI" -lat 42.35 -lon "-84.03" -icalFile "/home/cdzombak/wxcal/public/Chelsea-MI.ics" -sunIcalFile "/home/cdzombak/wxcal/public/Chelsea-MI-Sun.ics"
 ```
 
 ## About
