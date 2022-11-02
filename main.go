@@ -237,7 +237,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 			event.SetAllDayStartAt(d.Start)
 			event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
 			event.SetLocation(calLocation)
-			evtSummary := fmt.Sprintf("☼ ↑ %s; ↓ %s",
+			evtSummary := fmt.Sprintf("☼ ↑ %s | ↓ %s",
 				d.Sunrise.Format("3:04 PM"),
 				d.Sunset.Format("3:04 PM"),
 			)
