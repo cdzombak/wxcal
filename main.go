@@ -45,8 +45,8 @@ type CalendarForecastDay struct {
 	Start           time.Time
 	DaytimePeriod   CalendarForecastPeriod
 	NighttimePeriod CalendarForecastPeriod
-	Sunrise time.Time
-	Sunset time.Time
+	Sunrise         time.Time
+	Sunset          time.Time
 }
 
 // SummaryLine returns a brief, 1 line summary of the day's forecast.
@@ -149,12 +149,12 @@ func Main(calLocation string, calDomain string, lat float64, lon float64, evtTit
 		} else {
 			calDay.NighttimePeriod = calPeriod
 		}
-		if calDay.Sunrise.IsZero() || calDay.Sunset.IsZero(){
+		if calDay.Sunrise.IsZero() || calDay.Sunset.IsZero() {
 			_, offsetSec := forecastPeriod.StartTime.Zone()
 			p := sunrisesunset.Parameters{
 				Latitude:  lat,
 				Longitude: lon,
-				UtcOffset: float64(offsetSec)/3600.0,
+				UtcOffset: float64(offsetSec) / 3600.0,
 				Date:      time.Date(forecastPeriod.StartTime.Year(), forecastPeriod.StartTime.Month(), forecastPeriod.StartTime.Day(), 0, 0, 0, 0, time.UTC),
 			}
 			sunrise, sunset, err := p.GetSunriseSunset()
