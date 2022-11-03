@@ -14,6 +14,7 @@ import (
 	"github.com/kelvins/sunrisesunset"
 )
 
+// ProductVersion is the application version, set during the build process by the Makefile.
 var ProductVersion = "dev"
 
 // ProductID identifies this software in User-Agents and iCal fields.
@@ -176,7 +177,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 	}
 
 	nowTime := time.Now()
-	iCalFmtProductId := fmt.Sprintf("-//%s-%s//EN", ProductID, ProductVersion)
+	iCalFmtProductID := fmt.Sprintf("-//%s-%s//EN", ProductID, ProductVersion)
 	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon)
 
 	calID := buildCalendarID(calLocation, calDomain, lat, lon, false)
@@ -187,7 +188,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 	cal.SetXWRCalDesc(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", calLocation))
 	cal.SetLastModified(forecastResp.Properties.Updated)
 	cal.SetMethod(ics.MethodPublish)
-	cal.SetProductId(iCalFmtProductId)
+	cal.SetProductId(iCalFmtProductID)
 	cal.SetVersion("2.0")
 	cal.SetXPublishedTTL("PT1H")
 	cal.SetRefreshInterval("PT1H")
@@ -228,7 +229,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 		cal.SetXWRCalDesc(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
 		cal.SetLastModified(nowTime)
 		cal.SetMethod(ics.MethodPublish)
-		cal.SetProductId(iCalFmtProductId)
+		cal.SetProductId(iCalFmtProductID)
 		cal.SetVersion("2.0")
 		cal.SetXPublishedTTL("PT1H")
 		cal.SetRefreshInterval("PT1H")
