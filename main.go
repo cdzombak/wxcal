@@ -14,7 +14,7 @@ import (
 	"github.com/kelvins/sunrisesunset"
 )
 
-var version = "<dev>"
+var version = "dev"
 
 // ProductID identifies this software in User-Agents and iCal fields.
 const ProductID = "github.com/cdzombak/wxcal"

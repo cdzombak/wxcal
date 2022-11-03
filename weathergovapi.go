@@ -43,7 +43,6 @@ type ForecastResponse struct {
 }
 
 const typeGeoJSON = "application/geo+json"
-const userAgent = ProductID
 const apiTimeout = 5 * time.Second
 
 // MakeHTTPClient returns an http.Client configured for use with the weather.gov forecast API
@@ -52,7 +51,7 @@ func MakeHTTPClient() *http.Client {
 	httpClient := &http.Client{Timeout: apiTimeout}
 	rt := withHeader(httpClient.Transport)
 	rt.Set("Accept", typeGeoJSON)
-	rt.Set("User-Agent", userAgent)
+	rt.Set("User-Agent", userAgent())
 	httpClient.Transport = rt
 	return httpClient
 }
@@ -125,4 +124,8 @@ func (h headerSettingRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 		req.Header[k] = v
 	}
 	return h.rt.RoundTrip(req)
+}
+
+func userAgent() string {
+	return ProductID + "-" + version
 }
