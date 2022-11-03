@@ -175,6 +175,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 		}
 	}
 
+	nowTime := time.Now()
 	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon)
 
 	calID := buildCalendarID(calLocation, calDomain, lat, lon, false)
@@ -183,7 +184,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 	cal.SetXWRCalName(fmt.Sprintf("%s Weather", calLocation))
 	cal.SetDescription(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", calLocation))
 	cal.SetXWRCalDesc(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", calLocation))
-	cal.SetLastModified(forecastResp.Updated)
+	cal.SetLastModified(forecastResp.Properties.Updated)
 	cal.SetMethod(ics.MethodPublish)
 	cal.SetProductId(fmt.Sprintf("-//%s//EN", ProductID))
 	cal.SetVersion("2.0")
@@ -192,8 +193,8 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 
 	for _, d := range cf {
 		event := cal.AddEvent(fmt.Sprintf("%s-%s", d.Start.Format("20060102"), calID))
-		event.SetDtStampTime(time.Now())
-		event.SetModifiedAt(forecastResp.Updated)
+		event.SetDtStampTime(nowTime)
+		event.SetModifiedAt(forecastResp.Properties.Updated)
 		event.SetAllDayStartAt(d.Start)
 		event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
 		event.SetLocation(calLocation)
@@ -224,7 +225,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 		cal.SetXWRCalName(fmt.Sprintf("%s Sunrise/Sunset", calLocation))
 		cal.SetDescription(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
 		cal.SetXWRCalDesc(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
-		cal.SetLastModified(time.Now())
+		cal.SetLastModified(nowTime)
 		cal.SetMethod(ics.MethodPublish)
 		cal.SetProductId(fmt.Sprintf("-//%s//EN", ProductID))
 		cal.SetVersion("2.0")
@@ -233,8 +234,8 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 
 		for _, d := range cf {
 			event := cal.AddEvent(fmt.Sprintf("%s-%s", d.Start.Format("20060102"), calID))
-			event.SetDtStampTime(time.Now())
-			event.SetModifiedAt(forecastResp.Updated)
+			event.SetDtStampTime(nowTime)
+			event.SetModifiedAt(nowTime)
 			event.SetAllDayStartAt(d.Start)
 			event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
 			event.SetLocation(calLocation)

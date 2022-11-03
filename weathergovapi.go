@@ -36,8 +36,8 @@ type ForecastPeriod struct {
 // ForecastResponse represents a subset of a response from the /gridpoints/{x},{y}/forecast API
 // https://www.weather.gov/documentation/services-web-api#/default/get_gridpoints__wfo___x___y__forecast
 type ForecastResponse struct {
-	Updated    time.Time `json:"updated"`
 	Properties struct {
+		Updated         time.Time        `json:"updated"`
 		ForecastPeriods []ForecastPeriod `json:"periods"`
 	} `json:"properties"`
 }
