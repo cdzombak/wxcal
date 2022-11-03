@@ -211,6 +211,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 		))
 	}
 
+	// TODO(cdzombak): make perm configurable
 	err = os.WriteFile(icalOutfile, []byte(cal.Serialize()), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write output file '%s': %w", icalOutfile, err)
