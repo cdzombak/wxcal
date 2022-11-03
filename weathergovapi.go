@@ -43,7 +43,7 @@ type ForecastResponse struct {
 }
 
 const typeGeoJSON = "application/geo+json"
-const userAgent = ProductID + ";chris@dzombak.com"
+const userAgent = ProductID
 const apiTimeout = 5 * time.Second
 
 // MakeHTTPClient returns an http.Client configured for use with the weather.gov forecast API
