@@ -27,21 +27,21 @@ lint: ## Lint all .go files
 .PHONY: build
 build: lint ## Build (for the current platform & architecture) to ./out
 	mkdir -p out
-	go build -ldflags="-X main.version=${VERSION}" -o ./out/${BIN_NAME} .
+	go build -ldflags="-X main.ProductVersion=${VERSION}" -o ./out/${BIN_NAME} .
 
 .PHONY: build-linux-amd64
 build-linux-amd64: ## Build for Linux/amd64 to ./out
 	mkdir -p out/linux-amd64
-	env GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./out/linux-amd64/${BIN_NAME} .
+	env GOOS=linux GOARCH=amd64 go build -ldflags="-X main.ProductVersion=${VERSION}" -o ./out/linux-amd64/${BIN_NAME} .
 
 .PHONY: build-darwin-amd64
 build-darwin-amd64: ## Build for macOS (Darwin) / amd64 to ./out
 	mkdir -p out/darwin-amd64
-	env GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./out/darwin-amd64/${BIN_NAME} .
+	env GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.ProductVersion=${VERSION}" -o ./out/darwin-amd64/${BIN_NAME} .
 
 .PHONY: install
 install: lint ## Build & install wxcal to /usr/local/bin
-	go build -ldflags="-X main.version=${VERSION}" -o /usr/local/bin/${BIN_NAME} .
+	go build -ldflags="-X main.ProductVersion=${VERSION}" -o /usr/local/bin/${BIN_NAME} .
 
 .PHONY: uninstall
 uninstall:  ## Remove wxcal from /usr/local/bin

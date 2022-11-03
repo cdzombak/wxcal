@@ -127,5 +127,5 @@ func (h headerSettingRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 }
 
 func userAgent() string {
-	return ProductID + "-" + version
+	return ProductID + "-" + ProductVersion
 }

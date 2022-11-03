@@ -14,7 +14,7 @@ import (
 	"github.com/kelvins/sunrisesunset"
 )
 
-var version = "dev"
+var ProductVersion = "dev"
 
 // ProductID identifies this software in User-Agents and iCal fields.
 const ProductID = "github.com/cdzombak/wxcal"
@@ -275,7 +275,7 @@ func main() {
 	flag.Parse()
 
 	if *printVersion {
-		fmt.Println(version)
+		fmt.Println(ProductVersion)
 		os.Exit(0)
 	}
 
