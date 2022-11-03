@@ -176,7 +176,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 	}
 
 	nowTime := time.Now()
-	iCalFmtProductId := fmt.Sprintf("-//%s//EN", ProductID)
+	iCalFmtProductId := fmt.Sprintf("-//%s-%s//EN", ProductID, ProductVersion)
 	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon)
 
 	calID := buildCalendarID(calLocation, calDomain, lat, lon, false)
