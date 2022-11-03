@@ -176,6 +176,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 	}
 
 	nowTime := time.Now()
+	iCalFmtProductId := fmt.Sprintf("-//%s//EN", ProductID)
 	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon)
 
 	calID := buildCalendarID(calLocation, calDomain, lat, lon, false)
@@ -186,7 +187,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 	cal.SetXWRCalDesc(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", calLocation))
 	cal.SetLastModified(forecastResp.Properties.Updated)
 	cal.SetMethod(ics.MethodPublish)
-	cal.SetProductId(fmt.Sprintf("-//%s//EN", ProductID))
+	cal.SetProductId(iCalFmtProductId)
 	cal.SetVersion("2.0")
 	cal.SetXPublishedTTL("PT1H")
 	cal.SetRefreshInterval("PT1H")
@@ -227,7 +228,7 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 		cal.SetXWRCalDesc(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
 		cal.SetLastModified(nowTime)
 		cal.SetMethod(ics.MethodPublish)
-		cal.SetProductId(fmt.Sprintf("-//%s//EN", ProductID))
+		cal.SetProductId(iCalFmtProductId)
 		cal.SetVersion("2.0")
 		cal.SetXPublishedTTL("PT1H")
 		cal.SetRefreshInterval("PT1H")
