@@ -1,0 +1,6 @@
+-s dir
+--name wxcal
+--description "Generate an iCal feed from the weather.gov forecast API"
+--url "https://github.com/cdzombak/wxcal"
+--maintainer "Chris Dzombak <https://www.dzombak.com>"
+--license "LGPL 2.1"
