@@ -117,4 +117,4 @@ docker run --rm \
 
 ## License
 
-GNU LGPL v2.1; (c) Chris Dzombak 2019-2020. See LICENSE at the root of this repository.
+GNU LGPL v2.1; (c) Chris Dzombak 2019-2023. See LICENSE at the root of this repository.
