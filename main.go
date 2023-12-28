@@ -59,9 +59,8 @@ func (d CalendarForecastDay) SummaryLine() string {
 		return fmt.Sprintf("%s | %s", daySummary, nightSummary)
 	} else if len(nightSummary) > 0 {
 		return fmt.Sprintf("%s: %s", d.NighttimePeriod.Name, nightSummary)
-	} else {
-		return daySummary
 	}
+	return daySummary
 }
 
 // DetailedForecast returns a more detailed version of the day's forecast.
@@ -70,9 +69,8 @@ func (d CalendarForecastDay) DetailedForecast() string {
 		return fmt.Sprintf("%s\\n\\nOvernight: %s", d.DaytimePeriod.DetailedForecast, d.NighttimePeriod.DetailedForecast)
 	} else if d.NighttimePeriod.IsPopulated {
 		return fmt.Sprintf("%s: %s", d.NighttimePeriod.Name, d.NighttimePeriod.DetailedForecast)
-	} else {
-		return d.DaytimePeriod.DetailedForecast
 	}
+	return d.DaytimePeriod.DetailedForecast
 }
 
 // DatesEqual returns true if the two given times are on the same day; false otherwise.
