@@ -68,7 +68,7 @@ func DoJSONRequest(httpClient *http.Client, req *http.Request, respBody interfac
 	}
 	err = json.Unmarshal(body, &respBody)
 	if err != nil {
-		return err
+		return fmt.Errorf("error decoding JSON response from body: %w\n\n%s", err, string(body))
 	}
 	return nil
 }
