@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -106,12 +105,6 @@ func buildCalendarID(calLocation string, calDomain string, lat float64, lon floa
 		strings.ToLower(calDomain))
 }
 
-func mustInt(x json.Number) int {
-	xi64, err := x.Int64()
-	if err != nil {
-		panic(err)
-	}
-	return int(xi64)
 }
 
 // Main implements the wxcal program.
