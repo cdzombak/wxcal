@@ -14,7 +14,7 @@ import (
 )
 
 // ProductVersion is the application version, set during the build process by the Makefile.
-var ProductVersion = "dev"
+var ProductVersion = "<dev>"
 
 // ProductID identifies this software in User-Agents and iCal fields.
 const ProductID = "github.com/cdzombak/wxcal"
@@ -105,14 +105,31 @@ func buildCalendarID(calLocation string, calDomain string, lat float64, lon floa
 		strings.ToLower(calDomain))
 }
 
+type ICalOpts struct {
+	CalLocation    string
+	CalDomain      string
+	EvtTitlePrefix string
+}
+
+type OutputOpts struct {
+	ICalOutfile    string
+	SunICalOutfile string
+}
+
+type MainOpts struct {
+	Lat   float64
+	Lon   float64
+	ICal  ICalOpts
+	Out   OutputOpts
+	WxApi WxGovApiOpts
 }
 
 // Main implements the wxcal program.
-func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalOutfile, sunICalOutfile string) error {
+func Main(opts MainOpts) error {
 	var forecastResp *ForecastResponse
 	err := retry.Do(
 		func() (err error) {
-			forecastResp, err = GetForecast(lat, lon)
+			forecastResp, err = GetForecast(&opts.WxApi, opts.Lat, opts.Lon)
 			return
 		},
 		retry.Attempts(3),
@@ -147,8 +164,8 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 		if calDay.Sunrise.IsZero() || calDay.Sunset.IsZero() {
 			_, offsetSec := forecastPeriod.StartTime.Zone()
 			p := sunrisesunset.Parameters{
-				Latitude:  lat,
-				Longitude: lon,
+				Latitude:  opts.Lat,
+				Longitude: opts.Lon,
 				UtcOffset: float64(offsetSec) / 3600.0,
 				Date:      time.Date(forecastPeriod.StartTime.Year(), forecastPeriod.StartTime.Month(), forecastPeriod.StartTime.Day(), 0, 0, 0, 0, time.UTC),
 			}
@@ -169,14 +186,14 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 
 	nowTime := time.Now()
 	iCalFmtProductID := fmt.Sprintf("-//%s-%s//EN", ProductID, ProductVersion)
-	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", lat, lon)
+	forecastLink := fmt.Sprintf("https://forecast.weather.gov/MapClick.php?textField1=%.2f&textField2=%.2f", opts.Lat, opts.Lon)
 
-	calID := buildCalendarID(calLocation, calDomain, lat, lon, false)
+	calID := buildCalendarID(opts.ICal.CalLocation, opts.ICal.CalDomain, opts.Lat, opts.Lon, false)
 	cal := ics.NewCalendar()
-	cal.SetName(fmt.Sprintf("%s Weather", calLocation))
-	cal.SetXWRCalName(fmt.Sprintf("%s Weather", calLocation))
-	cal.SetDescription(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", calLocation))
-	cal.SetXWRCalDesc(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", calLocation))
+	cal.SetName(fmt.Sprintf("%s Weather", opts.ICal.CalLocation))
+	cal.SetXWRCalName(fmt.Sprintf("%s Weather", opts.ICal.CalLocation))
+	cal.SetDescription(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", opts.ICal.CalLocation))
+	cal.SetXWRCalDesc(fmt.Sprintf("Weather forecast for the next week in %s, provided by weather.gov.", opts.ICal.CalLocation))
 	cal.SetLastModified(forecastResp.Properties.Updated)
 	cal.SetMethod(ics.MethodPublish)
 	cal.SetProductId(iCalFmtProductID)
@@ -190,11 +207,11 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 		event.SetModifiedAt(forecastResp.Properties.Updated)
 		event.SetAllDayStartAt(d.Start)
 		event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
-		event.SetLocation(calLocation)
+		event.SetLocation(opts.ICal.CalLocation)
 		event.SetURL(forecastLink)
 		evtSummary := d.SummaryLine()
-		if len(evtTitlePrefix) > 0 {
-			evtSummary = fmt.Sprintf("%s %s", evtTitlePrefix, evtSummary)
+		if len(opts.ICal.EvtTitlePrefix) > 0 {
+			evtSummary = fmt.Sprintf("%s %s", opts.ICal.EvtTitlePrefix, evtSummary)
 		}
 		event.SetSummary(evtSummary)
 		event.SetDescription(fmt.Sprintf("%s\\n\\nSunrise: %s\\nSunset: %s\\n\\nForecast Detail: %s",
@@ -206,18 +223,18 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 	}
 
 	// TODO(cdzombak): make perm configurable
-	err = os.WriteFile(icalOutfile, []byte(cal.Serialize()), 0644)
+	err = os.WriteFile(opts.Out.ICalOutfile, []byte(cal.Serialize()), 0644)
 	if err != nil {
-		return fmt.Errorf("failed to write output file '%s': %w", icalOutfile, err)
+		return fmt.Errorf("failed to write output file '%s': %w", opts.Out.ICalOutfile, err)
 	}
 
-	if sunICalOutfile != "" {
-		calID := buildCalendarID(calLocation, calDomain, lat, lon, true)
+	if opts.Out.SunICalOutfile != "" {
+		calID := buildCalendarID(opts.ICal.CalLocation, opts.ICal.CalDomain, opts.Lat, opts.Lon, true)
 		cal := ics.NewCalendar()
-		cal.SetName(fmt.Sprintf("%s Sunrise/Sunset", calLocation))
-		cal.SetXWRCalName(fmt.Sprintf("%s Sunrise/Sunset", calLocation))
-		cal.SetDescription(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
-		cal.SetXWRCalDesc(fmt.Sprintf("Sunrise/sunset for the next week in %s.", calLocation))
+		cal.SetName(fmt.Sprintf("%s Sunrise/Sunset", opts.ICal.CalLocation))
+		cal.SetXWRCalName(fmt.Sprintf("%s Sunrise/Sunset", opts.ICal.CalLocation))
+		cal.SetDescription(fmt.Sprintf("Sunrise/sunset for the next week in %s.", opts.ICal.CalLocation))
+		cal.SetXWRCalDesc(fmt.Sprintf("Sunrise/sunset for the next week in %s.", opts.ICal.CalLocation))
 		cal.SetLastModified(nowTime)
 		cal.SetMethod(ics.MethodPublish)
 		cal.SetProductId(iCalFmtProductID)
@@ -231,13 +248,13 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 			event.SetModifiedAt(nowTime)
 			event.SetAllDayStartAt(d.Start)
 			event.SetAllDayEndAt(d.Start) // one-day all-day event ends the same day it started
-			event.SetLocation(calLocation)
+			event.SetLocation(opts.ICal.CalLocation)
 			evtSummary := fmt.Sprintf("☼ ↑ %s | ↓ %s",
 				d.Sunrise.Round(time.Minute).Format("3:04 PM"),
 				d.Sunset.Round(time.Minute).Format("3:04 PM"),
 			)
-			if len(evtTitlePrefix) > 0 {
-				evtSummary = fmt.Sprintf("%s %s", evtTitlePrefix, evtSummary)
+			if len(opts.ICal.EvtTitlePrefix) > 0 {
+				evtSummary = fmt.Sprintf("%s %s", opts.ICal.EvtTitlePrefix, evtSummary)
 			}
 			event.SetSummary(evtSummary)
 			event.SetDescription(fmt.Sprintf("Sunrise: %s\\nSunset: %s",
@@ -246,9 +263,9 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 			))
 		}
 
-		err = os.WriteFile(sunICalOutfile, []byte(cal.Serialize()), 0644)
+		err = os.WriteFile(opts.Out.SunICalOutfile, []byte(cal.Serialize()), 0644)
 		if err != nil {
-			return fmt.Errorf("failed to write output file '%s': %w", icalOutfile, err)
+			return fmt.Errorf("failed to write output file '%s': %w", opts.Out.SunICalOutfile, err)
 		}
 	}
 
@@ -257,12 +274,14 @@ func Main(calLocation, calDomain string, lat, lon float64, evtTitlePrefix, icalO
 
 func main() {
 	var calLocation = flag.String("calLocation", "", "The name of the calendar's location (eg. \"Ann Arbor, MI\") (required)")
-	var calendarDomain = flag.String("calDomain", "", "The calendar's domain (eg. \"ical.dzombak.com\") (required)")
+	var calDomain = flag.String("calDomain", "", "The calendar's domain (eg. \"ical.dzombak.com\") (required)")
 	var evtTitlePrefix = flag.String("evtTitlePrefix", "", "An optional prefix to be inserted before each event's title")
 	var lat = flag.Float64("lat", 42.27, "The forecast location's latitude (eg. \"42.27\")")
 	var lon = flag.Float64("lon", -83.74, "The forecast location's longitude (eg. \"-83.74\")")
 	var icalOutfile = flag.String("icalFile", "", "Path/filename for iCal output file (required)")
 	var sunICalOutfile = flag.String("sunIcalFile", "", "Optional path/filename for sunrise/sunset iCal output file")
+	var uaEmail = flag.String("uaEmail", "", "Email address to include in the User-Agent header for api.weather.gov requests")
+	var forceIpv4 = flag.Bool("forceIpv4", false, "Force IPv4 for api.weather.gov requests")
 	var printVersion = flag.Bool("version", false, "Print version and exit")
 	flag.Parse()
 
@@ -271,12 +290,28 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *calLocation == "" || *calendarDomain == "" || *icalOutfile == "" {
+	if *calLocation == "" || *calDomain == "" || *icalOutfile == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	if err := Main(*calLocation, *calendarDomain, *lat, *lon, *evtTitlePrefix, *icalOutfile, *sunICalOutfile); err != nil {
+	if err := Main(MainOpts{
+		Lat: *lat,
+		Lon: *lon,
+		ICal: ICalOpts{
+			CalLocation:    *calLocation,
+			CalDomain:      *calDomain,
+			EvtTitlePrefix: *evtTitlePrefix,
+		},
+		Out: OutputOpts{
+			ICalOutfile:    *icalOutfile,
+			SunICalOutfile: *sunICalOutfile,
+		},
+		WxApi: WxGovApiOpts{
+			ForceIpv4: *forceIpv4,
+			UaEmail:   *uaEmail,
+		},
+	}); err != nil {
 		log.Fatalf(err.Error())
 	}
 }

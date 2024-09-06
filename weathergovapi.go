@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 )
+
+// TODO(cdzombak): refactor this into an actual struct
 
 // API client for a subset of https://www.weather.gov/documentation/services-web-api
 
@@ -42,22 +46,47 @@ type ForecastResponse struct {
 	} `json:"properties"`
 }
 
+// WxGovApiOpts contains optional configuration for the weather.gov API client
+type WxGovApiOpts struct {
+	ForceIpv4 bool
+	UaEmail   string
+}
+
 const typeGeoJSON = "application/geo+json"
 const apiTimeout = 5 * time.Second
 
-// MakeHTTPClient returns an http.Client configured for use with the weather.gov forecast API
+// makeHTTPClient returns an http.Client configured for use with the weather.gov forecast API
 // (including the necessary headers)
-func MakeHTTPClient() *http.Client {
+func makeHTTPClient(opts *WxGovApiOpts) *http.Client {
 	httpClient := &http.Client{Timeout: apiTimeout}
+	if opts != nil && opts.ForceIpv4 {
+		// ugly hack adapted from https://stackoverflow.com/questions/77718022/go-http-get-force-to-use-ipv4
+		// to work around https://github.com/weather-gov/api/discussions/763
+		httpClient.Transport = &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: func(ctx context.Context, network string, addr string) (net.Conn, error) {
+				return (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext(ctx, "tcp4", addr)
+			},
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+		}
+	}
 	rt := withHeader(httpClient.Transport)
 	rt.Set("Accept", typeGeoJSON)
-	rt.Set("User-Agent", userAgent())
+	rt.Set("User-Agent", userAgent(opts))
 	httpClient.Transport = rt
 	return httpClient
 }
 
-// DoJSONRequest performs the given API request, decoding the body as JSON into the given respBody.
-func DoJSONRequest(httpClient *http.Client, req *http.Request, respBody interface{}) error {
+// doJSONRequest performs the given API request, decoding the body as JSON into the given respBody.
+func doJSONRequest(httpClient *http.Client, req *http.Request, respBody interface{}) error {
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
@@ -74,8 +103,8 @@ func DoJSONRequest(httpClient *http.Client, req *http.Request, respBody interfac
 }
 
 // GetForecast returns a ForecastResponse representing the weather.gov forecast for the given latitude/longitude.
-func GetForecast(lat float64, lon float64) (*ForecastResponse, error) {
-	httpClient := MakeHTTPClient()
+func GetForecast(opts *WxGovApiOpts, lat float64, lon float64) (*ForecastResponse, error) {
+	httpClient := makeHTTPClient(opts)
 
 	reqURL := fmt.Sprintf("https://api.weather.gov/points/%.2f,%.2f", lat, lon)
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
@@ -84,7 +113,7 @@ func GetForecast(lat float64, lon float64) (*ForecastResponse, error) {
 	}
 
 	pointsResp := PointsResponse{}
-	if err = DoJSONRequest(httpClient, req, &pointsResp); err != nil {
+	if err = doJSONRequest(httpClient, req, &pointsResp); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +124,7 @@ func GetForecast(lat float64, lon float64) (*ForecastResponse, error) {
 	}
 
 	forecastResp := ForecastResponse{}
-	if err = DoJSONRequest(httpClient, req, &forecastResp); err != nil {
+	if err = doJSONRequest(httpClient, req, &forecastResp); err != nil {
 		return nil, err
 	}
 
@@ -126,6 +155,9 @@ func (h headerSettingRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 	return h.rt.RoundTrip(req)
 }
 
-func userAgent() string {
-	return ProductID + "-" + ProductVersion
+func userAgent(opts *WxGovApiOpts) string {
+	if opts != nil && opts.UaEmail != "" {
+		return fmt.Sprintf("%s %s (contact: %s)", ProductID, ProductVersion, opts.UaEmail)
+	}
+	return fmt.Sprintf("%s %s", ProductID, ProductVersion)
 }
