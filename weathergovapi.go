@@ -46,8 +46,8 @@ type ForecastResponse struct {
 	} `json:"properties"`
 }
 
-// WxGovApiOpts contains optional configuration for the weather.gov API client
-type WxGovApiOpts struct {
+// WxGovAPIOpts contains optional configuration for the weather.gov API client
+type WxGovAPIOpts struct {
 	ForceIpv4 bool
 	UaEmail   string
 }
@@ -57,14 +57,14 @@ const apiTimeout = 5 * time.Second
 
 // makeHTTPClient returns an http.Client configured for use with the weather.gov forecast API
 // (including the necessary headers)
-func makeHTTPClient(opts *WxGovApiOpts) *http.Client {
+func makeHTTPClient(opts *WxGovAPIOpts) *http.Client {
 	httpClient := &http.Client{Timeout: apiTimeout}
 	if opts != nil && opts.ForceIpv4 {
 		// ugly hack adapted from https://stackoverflow.com/questions/77718022/go-http-get-force-to-use-ipv4
 		// to work around https://github.com/weather-gov/api/discussions/763
 		httpClient.Transport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
-			DialContext: func(ctx context.Context, network string, addr string) (net.Conn, error) {
+			DialContext: func(ctx context.Context, _ string, addr string) (net.Conn, error) {
 				return (&net.Dialer{
 					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,
@@ -103,7 +103,7 @@ func doJSONRequest(httpClient *http.Client, req *http.Request, respBody interfac
 }
 
 // GetForecast returns a ForecastResponse representing the weather.gov forecast for the given latitude/longitude.
-func GetForecast(opts *WxGovApiOpts, lat float64, lon float64) (*ForecastResponse, error) {
+func GetForecast(opts *WxGovAPIOpts, lat float64, lon float64) (*ForecastResponse, error) {
 	httpClient := makeHTTPClient(opts)
 
 	reqURL := fmt.Sprintf("https://api.weather.gov/points/%.2f,%.2f", lat, lon)
@@ -155,7 +155,7 @@ func (h headerSettingRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 	return h.rt.RoundTrip(req)
 }
 
-func userAgent(opts *WxGovApiOpts) string {
+func userAgent(opts *WxGovAPIOpts) string {
 	if opts != nil && opts.UaEmail != "" {
 		return fmt.Sprintf("%s %s (contact: %s)", ProductID, ProductVersion, opts.UaEmail)
 	}

@@ -105,31 +105,34 @@ func buildCalendarID(calLocation string, calDomain string, lat float64, lon floa
 		strings.ToLower(calDomain))
 }
 
+// ICalOpts holds options for iCal generation
 type ICalOpts struct {
 	CalLocation    string
 	CalDomain      string
 	EvtTitlePrefix string
 }
 
+// OutputOpts holds output options for the program
 type OutputOpts struct {
 	ICalOutfile    string
 	SunICalOutfile string
 }
 
-type MainOpts struct {
+// Opts represents the command-line options for the wxcal program
+type Opts struct {
 	Lat   float64
 	Lon   float64
 	ICal  ICalOpts
 	Out   OutputOpts
-	WxApi WxGovApiOpts
+	WxAPI WxGovAPIOpts
 }
 
 // Main implements the wxcal program.
-func Main(opts MainOpts) error {
+func Main(opts Opts) error {
 	var forecastResp *ForecastResponse
 	err := retry.Do(
 		func() (err error) {
-			forecastResp, err = GetForecast(&opts.WxApi, opts.Lat, opts.Lon)
+			forecastResp, err = GetForecast(&opts.WxAPI, opts.Lat, opts.Lon)
 			return
 		},
 		retry.Attempts(3),
@@ -295,7 +298,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := Main(MainOpts{
+	if err := Main(Opts{
 		Lat: *lat,
 		Lon: *lon,
 		ICal: ICalOpts{
@@ -307,7 +310,7 @@ func main() {
 			ICalOutfile:    *icalOutfile,
 			SunICalOutfile: *sunICalOutfile,
 		},
-		WxApi: WxGovApiOpts{
+		WxAPI: WxGovAPIOpts{
 			ForceIpv4: *forceIpv4,
 			UaEmail:   *uaEmail,
 		},
