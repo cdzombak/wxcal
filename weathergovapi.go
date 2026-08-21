@@ -19,6 +19,7 @@ import (
 type PointsResponse struct {
 	Properties struct {
 		ForecastURL string `json:"forecast"`
+		TimeZone    string `json:"timeZone"`
 	} `json:"properties"`
 }
 
@@ -102,33 +103,35 @@ func doJSONRequest(httpClient *http.Client, req *http.Request, respBody interfac
 	return nil
 }
 
-// GetForecast returns a ForecastResponse representing the weather.gov forecast for the given latitude/longitude.
-func GetForecast(opts *WxGovAPIOpts, lat float64, lon float64) (*ForecastResponse, error) {
+// GetForecast returns a ForecastResponse representing the weather.gov forecast for the given
+// latitude/longitude, along with the IANA timezone name the API reports for that location. The
+// returned timezone name may be empty if the API did not provide one.
+func GetForecast(opts *WxGovAPIOpts, lat float64, lon float64) (*ForecastResponse, string, error) {
 	httpClient := makeHTTPClient(opts)
 
 	reqURL := fmt.Sprintf("https://api.weather.gov/points/%.2f,%.2f", lat, lon)
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	pointsResp := PointsResponse{}
 	if err = doJSONRequest(httpClient, req, &pointsResp); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	reqURL = pointsResp.Properties.ForecastURL
 	req, err = http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	forecastResp := ForecastResponse{}
 	if err = doJSONRequest(httpClient, req, &forecastResp); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return &forecastResp, nil
+	return &forecastResp, pointsResp.Properties.TimeZone, nil
 }
 
 // headerSettingRoundTripper is a RoundTripper transport which automatically sets headers on every request.
