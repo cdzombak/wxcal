@@ -19,6 +19,8 @@ wxcal [-flag value] [...]
         The name of the calendar's location (eg. "Ann Arbor, MI") (required)
   -evtTitlePrefix string
         An optional prefix to be inserted before each event's title
+  -forceIpv4
+        Force IPv4 for api.weather.gov requests
   -icalFile string
         Path/filename for the weather forecast iCal output file (at least one of -icalFile/-sunIcalFile is required)
   -lat float
@@ -31,9 +33,13 @@ wxcal [-flag value] [...]
         Path/filename for the sunrise/sunset iCal output file (at least one of -icalFile/-sunIcalFile is required)
   -timezone string
         IANA timezone name for the sunrise/sunset times in both calendars (eg. "America/Detroit"); if omitted, the timezone is determined from the forecast API or the given lat/lon
+  -uaEmail string
+        Email address to include in the User-Agent header for api.weather.gov requests
 ```
 
-Additionally, `wxcal -version` will print the version number and exit.
+`-uaEmail` and `-forceIpv4` affect only requests to weather.gov, and are therefore unused when generating just a sunrise/sunset calendar. weather.gov asks that API clients identify themselves with a contact address, so supplying `-uaEmail` is good practice. `-forceIpv4` works around [an api.weather.gov IPv6 issue](https://github.com/weather-gov/api/discussions/763).
+
+Additionally, `wxcal -help` will print this usage information and exit, and `wxcal -version` will print the version number and exit.
 
 ### Example
 
