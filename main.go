@@ -22,6 +22,10 @@ var ProductVersion = "<dev>"
 // ProductID identifies this software in User-Agents and iCal fields.
 const ProductID = "github.com/cdzombak/wxcal"
 
+// MaxSunDays is the largest accepted -sunDays value. Sunrise/sunset times are cheap to calculate,
+// so this is only a guard against a mistyped value producing an enormous calendar.
+const MaxSunDays = 36500
+
 // CalendarForecastPeriod represents one period (daytime or nighttime) of a forecast entry on the calendar.
 type CalendarForecastPeriod struct {
 	IsPopulated      bool
@@ -332,8 +336,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *sunDays < 1 {
-		fmt.Println("-sunDays must be at least 1")
+	if *sunDays < 1 || *sunDays > MaxSunDays {
+		fmt.Printf("-sunDays must be between 1 and %d\n", MaxSunDays)
 		os.Exit(1)
 	}
 
