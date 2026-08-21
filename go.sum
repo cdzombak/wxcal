@@ -1,5 +1,5 @@
-github.com/avast/retry-go v2.5.0+incompatible h1:8SaFqliw34WeeaPs+GEtMMkiwEsC2S6+YyqnLqI55Ks=
-github.com/avast/retry-go v2.5.0+incompatible/go.mod h1:XtSnn+n/sHqQIpZ10K1qAevBhOOCWBLXXy3hyiqqBrY=
+github.com/avast/retry-go v3.0.0+incompatible h1:4SOWQ7Qs+oroOTQOYnAHqelpCO0biHSxpiH9JdtuBj0=
+github.com/avast/retry-go v3.0.0+incompatible/go.mod h1:XtSnn+n/sHqQIpZ10K1qAevBhOOCWBLXXy3hyiqqBrY=
 github.com/cdzombak/golang-ical v0.0.0-20191115194650-615e903d90b7 h1:ZThB8tllmdHmXqmqoPiwEYxASQB1T3IhVxpskUMVh4I=
 github.com/cdzombak/golang-ical v0.0.0-20191115194650-615e903d90b7/go.mod h1:iDFK01A1Yb5HiGn6YEaZ516fCow5FnEAjyMfOOIYMuo=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=

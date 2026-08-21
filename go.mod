@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/arran4/golang-ical v0.0.0-20191011054615-fb8af82a1cf8
-	github.com/avast/retry-go v2.5.0+incompatible
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/nathan-osman/go-sunrise v1.1.0
 	github.com/ringsaturn/tzf v1.2.5
 )
