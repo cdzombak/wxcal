@@ -26,11 +26,11 @@ wxcal [-flag value] [...]
   -lon float
         The forecast location's longitude (eg. "-83.74") (default -83.74)
   -sunDays int
-        The number of days, counting today, to include in the sunrise/sunset calendar (default 7)
+        The number of days, counting today, to include in the sunrise/sunset calendar (requires -sunIcalFile) (default 7)
   -sunIcalFile string
         Path/filename for the sunrise/sunset iCal output file (at least one of -icalFile/-sunIcalFile is required)
   -timezone string
-        IANA timezone name for sunrise/sunset calculations (eg. "America/Detroit"); if omitted, the timezone is determined from the given lat/lon
+        IANA timezone name for the sunrise/sunset times in both calendars (eg. "America/Detroit"); if omitted, the timezone is determined from the forecast API or the given lat/lon
 ```
 
 Additionally, `wxcal -version` will print the version number and exit.
@@ -57,7 +57,9 @@ wxcal -calDomain ics.dzombak.com -calLocation "Chelsea, MI" -lat 42.35 -lon "-84
 
 ### Timezones
 
-Sunrise/sunset times are given in the location's local time, accounting for daylight saving time changes. wxcal determines that timezone from the `-timezone` flag if given; otherwise from the weather.gov API if a forecast calendar is being generated; otherwise by looking up the given latitude/longitude in an embedded [timezone boundary database](https://github.com/ringsaturn/tzf).
+Sunrise/sunset times are given in the location's local time, accounting for daylight saving time changes. This applies to both calendars: the forecast feed's events include the day's sunrise & sunset alongside the forecast.
+
+wxcal determines that timezone from the `-timezone` flag if given; otherwise from the weather.gov API if a forecast calendar is being generated; otherwise by looking up the given latitude/longitude in an embedded [timezone boundary database](https://github.com/ringsaturn/tzf).
 
 For days on which the sun does not rise or set at all — which happens above the Arctic Circle and below the Antarctic Circle — the sunrise/sunset calendar notes that the sun is up or down for the whole day.
 
