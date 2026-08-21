@@ -202,7 +202,11 @@ func buildCalendarForecast(forecastResp *ForecastResponse, lat float64, lon floa
 			calDay.NighttimePeriod = calPeriod
 		}
 		if !existed {
-			calDay.Sun = SunDayFor(lat, lon, loc, calDay.Start)
+			// Interpret the API's calendar date in loc directly. Handing SunDayFor the instant
+			// instead would convert it, shifting the date whenever loc is west of the UTC offset
+			// the API reported (which -timezone can arrange).
+			calDay.Sun = SunDayFor(lat, lon, loc,
+				time.Date(calDay.Start.Year(), calDay.Start.Month(), calDay.Start.Day(), 12, 0, 0, 0, loc))
 		}
 		if existed {
 			cf[i] = calDay

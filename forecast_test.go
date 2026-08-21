@@ -42,11 +42,11 @@ func testForecastResponse(t *testing.T, loc *time.Location, day time.Time) *Fore
 	return resp
 }
 
-func writeTestForecast(t *testing.T, opts Opts, loc *time.Location, day time.Time) string {
+func writeTestForecast(t *testing.T, opts Opts, apiLoc *time.Location, loc *time.Location, day time.Time) string {
 	t.Helper()
 	outfile := filepath.Join(t.TempDir(), "wx.ics")
 	opts.Out.ICalOutfile = outfile
-	if err := writeForecastCalendar(opts, testForecastResponse(t, loc, day), loc); err != nil {
+	if err := writeForecastCalendar(opts, testForecastResponse(t, apiLoc, day), loc); err != nil {
 		t.Fatalf("writeForecastCalendar: %s", err)
 	}
 	content, err := os.ReadFile(outfile)
@@ -73,7 +73,7 @@ func TestForecastCalendarIncludesSunTimes(t *testing.T) {
 	}
 
 	// 2026-11-01 is the "fall back" DST transition.
-	content := writeTestForecast(t, opts, loc, time.Date(2026, 11, 1, 0, 0, 0, 0, loc))
+	content := writeTestForecast(t, opts, loc, loc, time.Date(2026, 11, 1, 0, 0, 0, 0, loc))
 
 	if got := strings.Count(content, "BEGIN:VEVENT"); got != 2 {
 		t.Errorf("got %d events; want 2 (one per forecast day)", got)
@@ -109,12 +109,39 @@ func TestForecastCalendarPolar(t *testing.T) {
 	}
 
 	// Utqiagvik's polar night runs from roughly mid-November to late January.
-	content := writeTestForecast(t, opts, loc, time.Date(2026, 12, 21, 0, 0, 0, 0, loc))
+	content := writeTestForecast(t, opts, loc, loc, time.Date(2026, 12, 21, 0, 0, 0, 0, loc))
 
 	if !strings.Contains(content, "The sun does not rise today.") {
 		t.Error("output is missing the polar night description")
 	}
 	if strings.Contains(content, "Sunrise: 12:00:00 AM") {
 		t.Error("output contains a zero sunrise time")
+	}
+}
+
+// TestForecastCalendarRespectsTimezoneOverride verifies that each forecast event's sunrise/sunset
+// lines describe that event's own date. The weather.gov API returns times in the forecast
+// location's own UTC offset; converting that instant into a -timezone zone further west lands on
+// the previous day, which would attach the wrong day's sun times to the event.
+func TestForecastCalendarRespectsTimezoneOverride(t *testing.T) {
+	// The forecast is for Michigan, but the user asked for Pacific times.
+	apiLoc := mustLoadLocation(t, "America/Detroit")
+	loc := mustLoadLocation(t, "America/Los_Angeles")
+	opts := Opts{
+		Lat: 42.27, Lon: -83.74,
+		ICal: ICalOpts{CalLocation: "Ann Arbor, MI", CalDomain: "ics.dzombak.com"},
+	}
+
+	content := writeTestForecast(t, opts, apiLoc, loc, time.Date(2026, 7, 15, 0, 0, 0, 0, apiLoc))
+
+	// Sunrise in Ann Arbor on 2026-07-15, expressed in Pacific time. The event for the 15th must
+	// carry the 15th's sun times, not the 14th's.
+	want := SunDayFor(opts.Lat, opts.Lon, loc, time.Date(2026, 7, 15, 12, 0, 0, 0, loc))
+	if !strings.Contains(content, want.DetailLines()) {
+		t.Errorf("the 2026-07-15 event is missing that day's sun times (%q)", want.DetailLines())
+	}
+	notWant := SunDayFor(opts.Lat, opts.Lon, loc, time.Date(2026, 7, 14, 12, 0, 0, 0, loc))
+	if strings.Contains(content, notWant.DetailLines()) {
+		t.Errorf("the calendar contains 2026-07-14's sun times (%q)", notWant.DetailLines())
 	}
 }
