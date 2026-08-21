@@ -41,9 +41,9 @@ func (p CalendarForecastPeriod) SummaryLine() string {
 	if !p.IsPopulated {
 		return ""
 	}
-	sf := strings.Replace(p.ShortForecast, "Slight ", "", -1)
-	sf = strings.Replace(sf, " then ", "; ", -1)
-	sf = strings.Replace(sf, "Areas Of ", "", -1)
+	sf := strings.ReplaceAll(p.ShortForecast, "Slight ", "")
+	sf = strings.ReplaceAll(sf, " then ", "; ")
+	sf = strings.ReplaceAll(sf, "Areas Of ", "")
 	return fmt.Sprintf("%dº%s %s", p.Temperature, p.TemperatureUnit, sf)
 }
 
@@ -100,8 +100,8 @@ func (cf CalendarForecast) IndexForTime(t time.Time) (int, bool) {
 }
 
 func buildCalendarID(calLocation string, calDomain string, lat float64, lon float64, isSunCal bool) string {
-	calLocation = strings.Replace(calLocation, " ", "-", -1)
-	calLocation = strings.Replace(calLocation, ",", "", -1)
+	calLocation = strings.ReplaceAll(calLocation, " ", "-")
+	calLocation = strings.ReplaceAll(calLocation, ",", "")
 	if isSunCal {
 		calLocation += "-Sun"
 	}

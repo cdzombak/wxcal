@@ -52,20 +52,8 @@ package: all ## Build all binaries + .deb packages to ./out (requires fpm: https
 	fpm -t deb -v ${BIN_VERSION} -p ./out/${BIN_NAME}-${BIN_VERSION}-armhf.deb -a armhf ./out/${BIN_NAME}-${BIN_VERSION}-linux-armv6=/usr/bin/${BIN_NAME}
 
 .PHONY: lint
-lint: ## Lint all source files in this repository (requires nektos/act: https://nektosact.com)
-	act --artifact-server-path /tmp/artifacts -j lint
-
-.PHONY: update-lint
-update-lint: ## Pull updated images supporting the lint target (may fetch >10 GB!)
-	docker pull catthehacker/ubuntu:full-latest
-
-GOLINT_FILES:=$(shell find . -name '*.go' | grep -v /vendor/)
-.PHONY: golint
-golint: ## Lint all .go files with golint
-	@for file in ${GOLINT_FILES} ;  do \
-		echo "$$file" ; \
-		golint $$file ; \
-	done
+lint: ## Lint all Go files in this repository (requires golangci-lint: https://golangci-lint.run)
+	golangci-lint run ./...
 
 .PHONY: install
 install: lint  ## Build & install wxcal directly to /usr/local/bin

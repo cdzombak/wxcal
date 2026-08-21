@@ -78,31 +78,35 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      checks: write
-      issues: write
-      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run MegaLinter
-        uses: oxsecurity/megalinter@v7
-        env:
-          # See https://megalinter.io/configuration and .mega-linter.yml
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Archive MegaLinter artifacts
-        if: ( !env.ACT && ( success() || failure() ) )
-        uses: actions/upload-artifact@v4
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-          name: MegaLinter artifacts
-          path: |
-            megalinter-reports
-            mega-linter.log
+          go-version-file: go.mod
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+
+  actionlint:
+    name: Lint GitHub Actions
+    runs-on: ubuntu-latest
+    permissions:
+      # reviewdog's default reporter (github-pr-check) posts via the Checks API
+      checks: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run actionlint
+        uses: reviewdog/action-actionlint@v1
+        with:
+          fail_level: error
 
   docker:
     name: Docker Images
-    needs: [lint, meta]
+    needs: [lint, actionlint, meta]
     if: needs.meta.outputs.is_running_version_tag_update != 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -178,7 +182,7 @@ jobs:
 
   binaries:
     name: Binaries & Debian Packages
-    needs: [lint, meta]
+    needs: [lint, actionlint, meta]
     if: needs.meta.outputs.is_running_version_tag_update != 'true'
     runs-on: ubuntu-latest
 
@@ -187,7 +191,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: stable
       - name: Go version
@@ -237,7 +241,7 @@ jobs:
         working-directory: out
         run: ls -R
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: out/${{ needs.meta.outputs.bin_name }}-*
           prerelease: ${{ needs.meta.outputs.is_prerelease == 'true' }}

@@ -59,8 +59,8 @@ func writeTestForecast(t *testing.T, opts Opts, apiLoc *time.Location, loc *time
 // unfoldICS undoes RFC 5545 line folding, so that assertions can match against content which the
 // serializer may have split across lines.
 func unfoldICS(s string) string {
-	s = strings.Replace(s, "\r\n ", "", -1)
-	return strings.Replace(s, "\n ", "", -1)
+	s = strings.ReplaceAll(s, "\r\n ", "")
+	return strings.ReplaceAll(s, "\n ", "")
 }
 
 // TestForecastCalendarIncludesSunTimes verifies that the forecast calendar's event descriptions
