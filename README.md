@@ -1,10 +1,10 @@
 # wxcal
 
-wxcal generates iCal feeds for a given location: a weather forecast feed built from weather.gov forecast data, and/or a sunrise/sunset feed. At least one of the two must be requested; each is optional.
+wxcal generates iCal feeds for a given location: a weather forecast feed built from weather.gov forecast data, and/or a sunrise/sunset feed.
 
 The forecast feed has an all-day event for today and for each of the following 6 days; each event contains a summary of the forecast for that day along with the day's sunrise & sunset times.
 
-The sunrise/sunset feed has an all-day event per day giving that day's sunrise and sunset times. It covers 7 days by default, and up to any number of days via `-sunDays`, since sunrise/sunset times are calculated locally rather than fetched from weather.gov. Requesting only this feed makes no network requests at all, so it works for locations outside weather.gov's coverage area.
+The sunrise/sunset feed has an all-day event per day giving that day's sunrise and sunset times. It covers 7 days by default, and up to any number of days via `-sunDays`. Requesting only this feed makes no network requests at all, so it works for locations outside weather.gov's coverage area.
 
 For an example feed generated with this tool, see [dzombak.com/local/wxcal/Ann-Arbor-MI.ics](https://www.dzombak.com/local/wxcal/Ann-Arbor-MI.ics).
 
@@ -37,7 +37,7 @@ wxcal [-flag value] [...]
         Email address to include in the User-Agent header for api.weather.gov requests
 ```
 
-`-uaEmail` and `-forceIpv4` affect only requests to weather.gov, and are therefore unused when generating just a sunrise/sunset calendar. weather.gov asks that API clients identify themselves with a contact address, so supplying `-uaEmail` is good practice. `-forceIpv4` works around [an api.weather.gov IPv6 issue](https://github.com/weather-gov/api/discussions/763).
+`-uaEmail` and `-forceIpv4` affect only requests to weather.gov, and are therefore unused when generating just a sunrise/sunset calendar. **weather.gov asks that API clients identify themselves with a contact address, so supplying `-uaEmail` is good practice.** `-forceIpv4` works around [an api.weather.gov IPv6 issue](https://github.com/weather-gov/api/discussions/763).
 
 Additionally, `wxcal -help` will print this usage information and exit, and `wxcal -version` will print the version number and exit.
 
