@@ -1,10 +1,12 @@
 # wxcal
 
-wxcal generates an iCal feed from weather.gov forecast data for a given location. The resulting feed has an all-day event for today and for each of the following 6 days; each event contains a summary of the forecast for that day along with the day's sunrise & sunset times.
+wxcal generates iCal feeds for a given location: a weather forecast feed built from weather.gov forecast data, and/or a sunrise/sunset feed. At least one of the two must be requested; each is optional.
+
+The forecast feed has an all-day event for today and for each of the following 6 days; each event contains a summary of the forecast for that day along with the day's sunrise & sunset times.
+
+The sunrise/sunset feed has an all-day event per day giving that day's sunrise and sunset times. It covers 7 days by default, and up to any number of days via `-sunDays`, since sunrise/sunset times are calculated locally rather than fetched from weather.gov. Requesting only this feed makes no network requests at all, so it works for locations outside weather.gov's coverage area.
 
 For an example feed generated with this tool, see [dzombak.com/local/wxcal/Ann-Arbor-MI.ics](https://www.dzombak.com/local/wxcal/Ann-Arbor-MI.ics).
-
-Optionally, wxcal can also generate a sunrise/sunset specific calendar alongside the forecast calendar.
 
 ## Usage
 
@@ -17,17 +19,27 @@ wxcal [-flag value] [...]
         The name of the calendar's location (eg. "Ann Arbor, MI") (required)
   -evtTitlePrefix string
         An optional prefix to be inserted before each event's title
+  -forceIpv4
+        Force IPv4 for api.weather.gov requests
   -icalFile string
-        Path/filename for iCal output file (required)
+        Path/filename for the weather forecast iCal output file (at least one of -icalFile/-sunIcalFile is required)
   -lat float
         The forecast location's latitude (eg. "42.27") (default 42.27)
   -lon float
         The forecast location's longitude (eg. "-83.74") (default -83.74)
+  -sunDays int
+        The number of days, counting today, to include in the sunrise/sunset calendar (default 7)
   -sunIcalFile string
-        Optional path/filename for sunrise/sunset iCal output file
+        Path/filename for the sunrise/sunset iCal output file (at least one of -icalFile/-sunIcalFile is required)
+  -timezone string
+        IANA timezone name for the sunrise/sunset times in both calendars (eg. "America/Detroit"); if omitted, the timezone is determined from the forecast API or the given lat/lon
+  -uaEmail string
+        Email address to include in the User-Agent header for api.weather.gov requests
 ```
 
-Additionally, `wxcal -version` will print the version number and exit.
+`-uaEmail` and `-forceIpv4` affect only requests to weather.gov, and are therefore unused when generating just a sunrise/sunset calendar. weather.gov asks that API clients identify themselves with a contact address, so supplying `-uaEmail` is good practice. `-forceIpv4` works around [an api.weather.gov IPv6 issue](https://github.com/weather-gov/api/discussions/763).
+
+Additionally, `wxcal -help` will print this usage information and exit, and `wxcal -version` will print the version number and exit.
 
 ### Example
 
@@ -42,6 +54,20 @@ This invocation generates two feeds, [one for Chelsea weather](https://www.dzomb
 ```shell
 wxcal -calDomain ics.dzombak.com -calLocation "Chelsea, MI" -lat 42.35 -lon "-84.03" -icalFile "/home/cdzombak/wxcal/public/Chelsea-MI.ics" -sunIcalFile "/home/cdzombak/wxcal/public/Chelsea-MI-Sun.ics"
 ```
+
+This invocation generates only a sunrise/sunset feed, covering a full year. Because no forecast is requested, it makes no network requests:
+
+```shell
+wxcal -calDomain ics.dzombak.com -calLocation "Chelsea, MI" -lat 42.35 -lon "-84.03" -sunIcalFile "/home/cdzombak/wxcal/public/Chelsea-MI-Sun.ics" -sunDays 365
+```
+
+### Timezones
+
+Sunrise/sunset times are given in the location's local time, accounting for daylight saving time changes. This applies to both calendars: the forecast feed's events include the day's sunrise & sunset alongside the forecast.
+
+wxcal determines that timezone from the `-timezone` flag if given; otherwise from the weather.gov API if a forecast calendar is being generated; otherwise by looking up the given latitude/longitude in an embedded [timezone boundary database](https://github.com/ringsaturn/tzf).
+
+For days on which the sun does not rise or set at all — which happens above the Arctic Circle and below the Antarctic Circle — the sunrise/sunset calendar notes that the sun is up or down for the whole day.
 
 ## Installation
 
