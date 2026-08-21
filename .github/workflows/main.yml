@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Derive version string
         id: bin_version
         run: echo "bin_version=$(./.version.sh)" >> "$GITHUB_OUTPUT"
@@ -80,9 +80,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Run golangci-lint
@@ -98,7 +98,7 @@ jobs:
       checks: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Run actionlint
         uses: reviewdog/action-actionlint@v1
         with:
@@ -114,11 +114,11 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Login to GHCR
         if: needs.meta.outputs.is_pull_request != 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -126,26 +126,26 @@ jobs:
 
       - name: Login to Docker Hub
         if: needs.meta.outputs.is_pull_request != 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: all
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: Docker meta
         id: docker_meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ${{ needs.meta.outputs.dockerhub_owner }}/${{ needs.meta.outputs.bin_name }}
@@ -158,7 +158,7 @@ jobs:
             type=semver,pattern={{major}}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -172,7 +172,7 @@ jobs:
 
       - name: Update Docker Hub description
         if: needs.meta.outputs.is_release == 'true'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@v5
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -188,10 +188,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: stable
       - name: Go version
@@ -217,7 +217,7 @@ jobs:
           cp ./*.deb ./gh-release/
           find . -name '${{ needs.meta.outputs.bin_name }}-*' -executable -type f -maxdepth 1 -print0 | xargs -0 -I {} tar --transform='flags=r;s|.*|${{ needs.meta.outputs.bin_name }}|' -czvf ./gh-release/{}.tar.gz {}
       - name: Upload binaries & packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ needs.meta.outputs.bin_name }} Binary Artifacts
           path: out/gh-release/*
@@ -233,7 +233,7 @@ jobs:
       contents: write
     steps:
       - name: Download binaries & packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.meta.outputs.bin_name }} Binary Artifacts
           path: out
@@ -241,7 +241,7 @@ jobs:
         working-directory: out
         run: ls -R
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: out/${{ needs.meta.outputs.bin_name }}-*
           prerelease: ${{ needs.meta.outputs.is_prerelease == 'true' }}
@@ -257,9 +257,9 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Update running major/minor version tags
-        uses: sersoft-gmbh/running-release-tags-action@v3
+        uses: sersoft-gmbh/running-release-tags-action@v4
         with:
           fail-on-non-semver-tag: true
           create-release: false
@@ -272,7 +272,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download binaries & packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.meta.outputs.bin_name }} Binary Artifacts
           path: out
@@ -281,7 +281,7 @@ jobs:
         working-directory: out
 
       - name: Login to Tailscale
-        uses: tailscale/github-action@v2
+        uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
@@ -317,7 +317,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Release to ${{ needs.meta.outputs.brewtap_owner }}/${{ needs.meta.outputs.brewtap_name }} tap
-        uses: Justintime50/homebrew-releaser@v1
+        uses: Justintime50/homebrew-releaser@v4.0.0
         with:
           homebrew_owner: ${{ needs.meta.outputs.brewtap_owner }}
           homebrew_tap: homebrew-${{ needs.meta.outputs.brewtap_name }}
