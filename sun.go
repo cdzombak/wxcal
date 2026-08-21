@@ -13,6 +13,10 @@ import (
 // rises nor sets. On those days Sunrise and Sunset are zero and exactly one of AlwaysUp (polar day)
 // or AlwaysDown (polar night) is true.
 type SunDay struct {
+	// Date is local noon on the day represented, not local midnight: in zones whose DST transition
+	// happens at midnight (eg. America/Santiago, America/Havana), local midnight does not exist on
+	// the transition day, and time.Date resolves it to a time on the previous day. Noon is never
+	// skipped by a transition. Only Date's date part is ever used.
 	Date       time.Time
 	Sunrise    time.Time
 	Sunset     time.Time
@@ -57,15 +61,14 @@ func (d SunDay) DetailLines() string {
 // time, at the given latitude/longitude. Returned times are in the given location.
 func SunDayFor(lat, lon float64, loc *time.Location, day time.Time) SunDay {
 	day = day.In(loc)
-	result := SunDay{
-		Date: time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, loc),
-	}
+	noon := time.Date(day.Year(), day.Month(), day.Day(), 12, 0, 0, 0, loc)
+	result := SunDay{Date: noon}
 
 	// go-sunrise interprets its date arguments as a UTC calendar date. Anchoring on the UTC instant
 	// of local noon keeps each result on the local day it belongs to, including in zones whose civil
 	// time is far from their solar time (eg. UTC+13/+14, where using the local date directly places
 	// every event on the wrong day).
-	anchor := time.Date(day.Year(), day.Month(), day.Day(), 12, 0, 0, 0, loc).UTC()
+	anchor := noon.UTC()
 
 	rise, set := sunrise.SunriseSunset(lat, lon, anchor.Year(), anchor.Month(), anchor.Day())
 	if rise.IsZero() || set.IsZero() {
@@ -88,12 +91,13 @@ func SunDayFor(lat, lon float64, loc *time.Location, day time.Time) SunDay {
 // with the local day containing start.
 func SunDays(lat, lon float64, loc *time.Location, start time.Time, count int) []SunDay {
 	start = start.In(loc)
-	first := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, loc)
 
 	days := make([]SunDay, 0, count)
 	for i := 0; i < count; i++ {
-		// AddDate, not Add(24*time.Hour): the latter drifts across DST transitions.
-		days = append(days, SunDayFor(lat, lon, loc, first.AddDate(0, 0, i)))
+		// Advance by calendar date (time.Date normalizes the overflowing day) rather than by adding
+		// 24 hours, which drifts across DST transitions.
+		day := time.Date(start.Year(), start.Month(), start.Day()+i, 12, 0, 0, 0, loc)
+		days = append(days, SunDayFor(lat, lon, loc, day))
 	}
 	return days
 }

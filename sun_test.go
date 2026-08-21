@@ -138,13 +138,13 @@ func TestSunDaysCoversConsecutiveLocalDays(t *testing.T) {
 		t.Fatalf("got %d days; want 400", len(days))
 	}
 
-	want := time.Date(2026, 3, 5, 0, 0, 0, 0, loc)
+	want := time.Date(2026, 3, 5, 12, 0, 0, 0, loc)
 	for i, d := range days {
 		if !d.Date.Equal(want) {
 			t.Fatalf("day %d: got %s; want %s", i, d.Date.Format(time.RFC3339), want.Format(time.RFC3339))
 		}
-		if h, m, s := d.Date.Clock(); h != 0 || m != 0 || s != 0 {
-			t.Errorf("day %d: got %s; want local midnight", i, d.Date.Format(time.RFC3339))
+		if h, m, s := d.Date.Clock(); h != 12 || m != 0 || s != 0 {
+			t.Errorf("day %d: got %s; want local noon", i, d.Date.Format(time.RFC3339))
 		}
 		want = want.AddDate(0, 0, 1)
 	}
@@ -182,5 +182,54 @@ func TestResolveTimezone(t *testing.T) {
 
 	if _, err := ResolveTimezone("Not/AZone", "", 42.27, -83.74); err == nil {
 		t.Error("expected an error for an invalid -timezone value")
+	}
+}
+
+// TestSunDaysMidnightDSTZones covers zones whose DST transition happens at midnight, where local
+// midnight does not exist on the transition day. Constructing that nonexistent time yields a time
+// on the *previous* day, which duplicates a date (and therefore an event UID) and drops a day.
+func TestSunDaysMidnightDSTZones(t *testing.T) {
+	zones := []struct {
+		name     string
+		tz       string
+		lat, lon float64
+	}{
+		{"Santiago", "America/Santiago", -33.45, -70.67},
+		{"Havana", "America/Havana", 23.11, -82.37},
+		{"Beirut", "Asia/Beirut", 33.89, 35.50},
+		{"Easter Island", "Pacific/Easter", -27.11, -109.35},
+	}
+
+	for _, z := range zones {
+		t.Run(z.name, func(t *testing.T) {
+			loc := mustLoadLocation(t, z.tz)
+			// A 400-day span from mid-year crosses both of the zone's transitions.
+			start := time.Date(2026, 6, 15, 12, 0, 0, 0, loc)
+			days := SunDays(z.lat, z.lon, loc, start, 400)
+
+			if len(days) != 400 {
+				t.Fatalf("got %d days; want 400", len(days))
+			}
+
+			// Expected dates are counted in UTC, which has no transitions to trip over.
+			first := days[0].Date
+			want := time.Date(first.Year(), first.Month(), first.Day(), 12, 0, 0, 0, time.UTC)
+			if got := want.Format("20060102"); got != "20260615" {
+				t.Errorf("calendar starts at %s; want 20260615", got)
+			}
+
+			seen := make(map[string]int, len(days))
+			for i, d := range days {
+				got := d.Date.Format("20060102")
+				if prev, dup := seen[got]; dup {
+					t.Fatalf("day %d duplicates the date of day %d (%s): UIDs would collide", i, prev, got)
+				}
+				seen[got] = i
+				if got != want.Format("20060102") {
+					t.Fatalf("day %d is %s; want %s", i, got, want.Format("20060102"))
+				}
+				want = want.AddDate(0, 0, 1)
+			}
+		})
 	}
 }
