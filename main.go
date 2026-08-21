@@ -336,6 +336,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	// -sunDays defaults to 7, so its value cannot distinguish "not given" from an explicit
+	// "-sunDays 7"; flag.Visit walks only the flags actually present on the command line.
+	sunDaysGiven := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "sunDays" {
+			sunDaysGiven = true
+		}
+	})
+	if sunDaysGiven && *sunICalOutfile == "" {
+		fmt.Println("-sunDays applies to the sunrise/sunset calendar, which requires -sunIcalFile")
+		os.Exit(1)
+	}
+
 	if *sunDays < 1 || *sunDays > MaxSunDays {
 		fmt.Printf("-sunDays must be between 1 and %d\n", MaxSunDays)
 		os.Exit(1)
