@@ -319,7 +319,7 @@ func main() {
 	var lon = flag.Float64("lon", -83.74, "The forecast location's longitude (eg. \"-83.74\")")
 	var icalOutfile = flag.String("icalFile", "", "Path/filename for the weather forecast iCal output file (at least one of -icalFile/-sunIcalFile is required)")
 	var sunICalOutfile = flag.String("sunIcalFile", "", "Path/filename for the sunrise/sunset iCal output file (at least one of -icalFile/-sunIcalFile is required)")
-	var sunDays = flag.Int("sunDays", 7, "The number of days, counting today, to include in the sunrise/sunset calendar (requires -sunIcalFile)")
+	var sunDays = flag.Int("sunDays", 7, "The number of days, counting today, to include in the sunrise/sunset calendar")
 	var timezone = flag.String("timezone", "", "IANA timezone name for the sunrise/sunset times in both calendars (eg. \"America/Detroit\"); if omitted, the timezone is determined from the forecast API or the given lat/lon")
 	var uaEmail = flag.String("uaEmail", "", "Email address to include in the User-Agent header for api.weather.gov requests")
 	var forceIpv4 = flag.Bool("forceIpv4", false, "Force IPv4 for api.weather.gov requests")
@@ -333,19 +333,6 @@ func main() {
 
 	if *calLocation == "" || *calDomain == "" || (*icalOutfile == "" && *sunICalOutfile == "") {
 		flag.PrintDefaults()
-		os.Exit(1)
-	}
-
-	// -sunDays defaults to 7, so its value cannot distinguish "not given" from an explicit
-	// "-sunDays 7"; flag.Visit walks only the flags actually present on the command line.
-	sunDaysGiven := false
-	flag.Visit(func(f *flag.Flag) {
-		if f.Name == "sunDays" {
-			sunDaysGiven = true
-		}
-	})
-	if sunDaysGiven && *sunICalOutfile == "" {
-		fmt.Println("-sunDays applies to the sunrise/sunset calendar, which requires -sunIcalFile")
 		os.Exit(1)
 	}
 

@@ -28,7 +28,7 @@ wxcal [-flag value] [...]
   -lon float
         The forecast location's longitude (eg. "-83.74") (default -83.74)
   -sunDays int
-        The number of days, counting today, to include in the sunrise/sunset calendar (requires -sunIcalFile) (default 7)
+        The number of days, counting today, to include in the sunrise/sunset calendar (default 7)
   -sunIcalFile string
         Path/filename for the sunrise/sunset iCal output file (at least one of -icalFile/-sunIcalFile is required)
   -timezone string
